@@ -11,7 +11,6 @@ class_answer = ""
 number_of_course_answer = ""
 
 
-
 bot = telebot.TeleBot('5095964171:AAH0en9UsoV5YU0uR1mSYoGpUKMQOwshUW8')
 @bot.message_handler(commands=['start'])  
 def start_command(message):
