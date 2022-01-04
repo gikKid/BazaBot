@@ -1,4 +1,5 @@
 import telebot
+from telebot import types
 from os import write
 import docx
 import json
@@ -17,6 +18,7 @@ class User():
         self.year = ""
         self.subject = ""
         self.semester = ""
+        self.document = ""
 
 user = User()
 
@@ -73,7 +75,9 @@ def iq_callback(query):
     elif data.startswith('year-'):
         get_year_callback(query)
     elif data.startswith('semester-'):
-        get_semester_callback(query)    
+        get_semester_callback(query)
+    elif data.startswith('document-'):
+        get_document_callback(query)   
         
 @bot.message_handler(content_types=['document'])
 def handle_docs_photo(message):
@@ -331,7 +335,6 @@ def send_year_result(message, ex_code):
     number_of_course_answer = ex_code
     user.year = number_of_course_answer
     bot.send_chat_action(message.chat.id, 'typing')
-    bot.send_chat_action(message.chat.id, 'typing')
     keyboard = telebot.types.InlineKeyboardMarkup()  
     keyboard.add(  
         telebot.types.InlineKeyboardButton('1', callback_data='semester-1'),
@@ -353,14 +356,40 @@ def send_semester_result(message, ex_code):
     with open('shablonBaza.png','rb') as photo_object:
         photo = photo_object
         bot.send_chat_action(message.chat.id, 'typing')
+        bot.send_photo(message.chat.id,photo)
+        keyboard = telebot.types.InlineKeyboardMarkup()  
+        keyboard.add(  
+        telebot.types.InlineKeyboardButton('table', callback_data='document-table'),
+        )
         bot.send_message(  
             message.chat.id,'Вы выбрали ' + str(user.semester) + " семестр\n" + 
             "Выберите базу, если интересующуюся база отсутствует, тогда вставьте свою\n" + 
-            "ОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СНИЗУ !",   
+            "ОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ !",
+        reply_markup=keyboard,   
 	    parse_mode='HTML'  
         )
-        bot.send_photo(message.chat.id,photo)
+        
 
+def get_document_callback(query):
+    bot.answer_callback_query(query.id)
+    send_document_result(query.message, query.data[9:])
+
+def send_document_result(message,ex_code):
+    user.document = ex_code
+    with open("table.json") as document_obj:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("1")
+        btn2 = types.KeyboardButton("2")
+        btn3 = types.KeyboardButton("3")
+        btn4 = types.KeyboardButton("4")
+        markup.add(btn1, btn2,btn3,btn4)
+        data = json.load(document_obj)
+        for number in data:
+            bot.send_message(message.chat.id,
+             number['Вопрос'] + "\n" + number['Ответ'],
+            reply_markup=markup,   
+	        parse_mode='HTML'  
+            )
 
 
 
