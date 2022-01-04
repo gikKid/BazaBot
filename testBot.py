@@ -1,13 +1,14 @@
 import telebot
-import datetime
-import pytz
+from os import write
+import docx
 import json
-import traceback
+import io
+import pytz
+
 
 P_TIMEZONE = pytz.timezone('Europe/Moscow') # для определения времени сообщения
 TIMEZONE_COMMON_NAME = 'Moscow'
 
-photo = open('shablonBaza.png','rb')
 
 class User():
     def __init__(self):
@@ -60,24 +61,6 @@ def help_command(message):
         reply_markup=keyboard  
     )
 
-@bot.message_handler(func=lambda message:True) 
-def message_handler(message):
-    if "Class:" in message.text:
-        bot.send_chat_action(message.chat.id, 'typing')
-        keyboard = telebot.types.InlineKeyboardMarkup()  
-        keyboard.add(  
-            telebot.types.InlineKeyboardButton('1', callback_data='semester-1'),
-            telebot.types.InlineKeyboardButton('2', callback_data='semester-2')  
-        )
-        user.subject = message.text[6:]
-        bot.send_message(message.chat.id, 'Вы выбрали '+ str(user.faculty) + " факультет, " + str(user.group) + " группа, " + str(user.year) + " год обучения, " + str(user.subject) + " предмет\n" + 
-        "Вставьте вашу базу, которая должна соответстовать шаблону снизу, чтобы корректно выводились вопросы и ответы\n" + 
-        "Или выберите семестр.",
-        reply_markup=keyboard,   
-	    parse_mode='HTML'
-        )  
-        bot.send_photo(message.chat.id,photo)
-        
 
 
 @bot.callback_query_handler(func=lambda call: True)  
@@ -98,7 +81,7 @@ def handle_docs_photo(message):
         file_info = bot.get_file(message.document.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
 
-        src = '/Users/macbookair13retina2018/Documents/Developer Python/BazaMiningBot' + message.document.file_name;
+        src = 'TestDocuments/' + message.document.file_name;
         with open(src, 'wb') as new_file:
             new_file.write(downloaded_file)
 
@@ -175,7 +158,7 @@ def send_group_result(message,ex_code):
             telebot.types.InlineKeyboardButton('5', callback_data='year-5'),
         )
     bot.send_message(  
-        message.chat.id,'Вы выбрали '+ str(user.faculty) + ' факультет,' + str(user.group) + ' группа.' + '\n' + 'Выбери год обучения',
+        message.chat.id,'Вы выбрали '+ str(user.faculty) + ' факультет,' + str(user.group) + ' группа.' + '\n' + 'Выберите год обучения',
         reply_markup=keyboard,   
 	parse_mode='HTML'  
     )  
@@ -188,24 +171,35 @@ def send_year_result(message, ex_code):
     number_of_course_answer = ex_code
     user.year = number_of_course_answer
     bot.send_chat_action(message.chat.id, 'typing')
+    bot.send_chat_action(message.chat.id, 'typing')
+    keyboard = telebot.types.InlineKeyboardMarkup()  
+    keyboard.add(  
+        telebot.types.InlineKeyboardButton('1', callback_data='semester-1'),
+        telebot.types.InlineKeyboardButton('2', callback_data='semester-2')  
+    )
     bot.send_message(  
-        message.chat.id,'Вы выбрали '+ str(user.faculty) + ' факультет,' + str(user.group) + ' группа, ' + str(user.year) + ' курс' + '\n' + 'Напишите предмет через Сlass:"Название предмета"',   
+        message.chat.id,'Вы выбрали '+ str(user.faculty) + ' факультет,' + str(user.group) + ' группа, ' + str(user.year) + ' курс' + '\n' + 'Выберите семестр"',
+    reply_markup=keyboard,   
 	parse_mode='HTML'  
     ) 
 
 def get_semester_callback(query): 
     bot.answer_callback_query(query.id)
     send_semester_result(query.message, query.data[9:])
-    
+
 
 def send_semester_result(message, ex_code):
     user.semester = ex_code
-    bot.send_chat_action(message.chat.id, 'typing')
-    bot.send_message(  
-        message.chat.id,'Вы выбрали ' + str(user.semester) + " семестр\n" + 
-        "Открываем базу в соответствие полученным ответам...",   
-	parse_mode='HTML'  
-    )
+    with open('shablonBaza.png','rb') as photo_object:
+        photo = photo_object
+        bot.send_chat_action(message.chat.id, 'typing')
+        bot.send_message(  
+            message.chat.id,'Вы выбрали ' + str(user.semester) + " семестр\n" + 
+            "Выберите базу, если интересующуюся база отсутствует, тогда вставьте свою\n" + 
+            "ОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СНИЗУ !",   
+	    parse_mode='HTML'  
+        )
+        bot.send_photo(message.chat.id,photo)
 
 
 
