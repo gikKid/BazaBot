@@ -33,7 +33,6 @@ data = []
 keys = None
 for i, row in enumerate(table.rows):
     text = (cell.text for cell in row.cells)
-
     if i == 0:
         keys = tuple(text)
         continue
