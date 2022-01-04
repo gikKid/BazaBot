@@ -1,7 +1,7 @@
 from os import write
 import docx
-import pandas as pd
-from docx.api import Document
+import json
+import io
 
 
 def iter_unique_cells(row):
@@ -26,18 +26,18 @@ for table in doc.tables:
 
 table = doc.tables[0]
 
-data = []
 
-keys = None
-for i, row in enumerate(table.rows):
-    text = (cell.text for cell in row.cells)
+# doc = docx.Document('PandasTableExtraction.docx')
+# table = doc.tables[0]
+# data = []
+# keys = None
+# for i, row in enumerate(table.rows):
+#     text = (cell.text for cell in row.cells)
 
-    if i == 0:
-        keys = tuple(text)
-        continue
-    row_data = dict(zip(keys, text))
-    data.append(row_data)
-data.to_csv('filename.csv', header = None) 
-df = pd.DataFrame(data)
-
-print(df)
+#     if i == 0:
+#         keys = tuple(text)
+#         continue
+#     row_data = dict(zip(keys, text))
+#     data.append(row_data)
+# with io.open("table.json", "w", encoding="utf-8") as data_file:
+#     json.dump(data, data_file, indent=4, ensure_ascii=False)
