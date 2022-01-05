@@ -7,7 +7,7 @@ import io
 import docx
 from docx.shared import RGBColor
 
-doc = docx.Document('SearchForQuestions.py')
+doc = docx.Document('baza.docx') #документ базы
 table = doc.tables[0]
 
 data = []
