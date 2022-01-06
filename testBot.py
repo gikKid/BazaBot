@@ -49,12 +49,15 @@ bot = telebot.TeleBot(config.apikey)
 def start_command(message):
     user = User()
     user.id = message.from_user.id
+    print(current_users_id)
+    print(users)
     if user.id not in current_users_id:
         users.append(user)
         print(users)
         for user in users:
-            current_users_id.append(user.id)
-            print(current_users_id)
+            if user.id not in current_users_id:
+                current_users_id.append(user.id)
+                print(current_users_id)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for faculty in mining_facults:
         btn = types.KeyboardButton(faculty)
