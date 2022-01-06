@@ -6,6 +6,7 @@ import json
 import io
 import pytz
 import config
+from SearchForQuestions import get_json
 
 P_TIMEZONE = pytz.timezone('Europe/Moscow') # для определения времени сообщения
 TIMEZONE_COMMON_NAME = 'Moscow'
@@ -40,7 +41,7 @@ fundamental_groups = ["ИАС","ИСТ"]
 economic_groups = ["ИТУ","МП","САМ","ЭГ","БА","МТ"]
 array_years = ["1","2","3","4"]
 array_semesters = ["1","2"]
-array_bazs = ['table']
+array_bazs = []
 count_answers = ["1","2","3","4"]
 
 
@@ -49,15 +50,11 @@ bot = telebot.TeleBot(config.apikey)
 def start_command(message):
     user = User()
     user.id = message.from_user.id
-    print(current_users_id)
-    print(users)
     if user.id not in current_users_id:
         users.append(user)
-        print(users)
         for user in users:
             if user.id not in current_users_id:
                 current_users_id.append(user.id)
-                print(current_users_id)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for faculty in mining_facults:
         btn = types.KeyboardButton(faculty)
@@ -84,11 +81,12 @@ def handle_docs_photo(message):
     try:
         file_info = bot.get_file(message.document.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
-
-        src = 'TestDocuments/' + message.document.file_name;
+        src = 'TestDocuments/' + message.document.file_name
         with open(src, 'wb') as new_file:
             new_file.write(downloaded_file)
 
+        array_bazs.append(message.document.file_name)
+        print(array_bazs)
         bot.reply_to(message, "Документ получен...")
     except Exception as e:
         bot.reply_to(message, e)
@@ -165,14 +163,26 @@ def get_document(message):
                 bot.send_chat_action(message.chat.id, 'typing')
                 bot.send_photo(message.chat.id,photo)
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                for baza in array_bazs:
-                    btn = types.KeyboardButton(baza)
-                    markup.add(btn)
-                bot.send_message(message.chat.id, text="Выберите базу, если интересующуюся база отсутствует, тогда вставьте свою\nОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ !".format(message.from_user), reply_markup=markup)
+                btn1 = types.KeyboardButton("Посмотреть базы")
+                btn2 = types.KeyboardButton("Открыть добавленную базу")
+                markup.add(btn1,btn2)
+                bot.send_message(message.chat.id, text="Вставьте свою базу или вы можете посмотреть уже добавленные базы\nОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ !".format(message.from_user), reply_markup=markup)
+
+
+def look_bazs(message):
+    for item in users:
+        if message.from_user.id == item.id:
+            bot.send_chat_action(message.chat.id, 'typing')
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            for baza in array_bazs:
+                btn = types.KeyboardButton(baza)
+                markup.add(btn)
+            bot.send_message(message.chat.id, text="Выберите базу".format(message.from_user), reply_markup=markup)
 
 
 def get_baza(message,answer=""):
-    with open(str(message.text) + ".json") as document_obj:
+    get_json('TestDocuments/' + message.text,message.from_user.id)
+    with open("table" + str(message.from_user.id) + ".json") as document_obj:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         for answer in count_answers:
             btn = types.KeyboardButton(answer)
@@ -189,7 +199,7 @@ def get_baza(message,answer=""):
                     item.right_answer = data[item.index]['Ответ']
                     bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
                     bot.send_message(message.chat.id,
-                        data[item.index]['Вопрос'] + "\n" + data[item.index]['Ответы'],   
+                        data[item.index]['Вопросы'] + "\n" + data[item.index]['Ответы'],   
                         parse_mode='HTML')
 
 
@@ -230,6 +240,8 @@ def func(message):
                 elif("Семестер:" in message.text):
                     item.semester = message.text[-1]
                     get_document(message)
+                elif("Посмотреть базы" in message.text):
+                    look_bazs(message)
                 elif(message.text in array_bazs):
                     item.document = message
                     get_baza(message)
