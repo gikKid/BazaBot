@@ -24,8 +24,9 @@ class User():
         self.index = 0
         self.data = [{}]
         self.file_Open = False
+        self.username = ""
 
-#users = []
+users = []
 
 #array_id = [n for n in range(1, 5000)]
 
@@ -34,10 +35,12 @@ bot = telebot.TeleBot(config.apikey)
 def start_command(message):
     
     user = User()
+    user.username = message.from_user.username
     #user.id = array_id.pop()
-    user.id = message.from_user.id
+    #user.id = message.from_user.id
     #print(message.from_user.id)
-    #users.append(user)
+    #print(message.from_user.username)
+    users.append(user)
     keyboard = telebot.types.InlineKeyboardMarkup()  
     keyboard.add(  
         telebot.types.InlineKeyboardButton('Геологоразведочный', callback_data='get-Геологоразведочный'),
@@ -83,7 +86,7 @@ def iq_callback(query):
     data = query.data  
     if data.startswith('get-'):  
         get_ex_callback(query)
-        print(query.message.from_user.id)
+        #print(query.message.from_user.id)
     elif data.startswith('group-'):
         get_group_callback(query)
     elif data.startswith('year-'):
@@ -109,7 +112,7 @@ def handle_docs_photo(message):
 
 
 def get_ex_callback(query):  
-    print(query.message.from_user.id)
+    #print(query.message.from_user.id)
     bot.answer_callback_query(query.id) # убираем состояние загрузки
     send_faculty_result(query.message, query.data[4:])
 
@@ -118,208 +121,212 @@ def send_faculty_result(message, ex_code):
     #print(users[0].id)
     #if len(users) > 1:
         #print(users[1].id)
-    print(message.from_user.id)
+    #print(message.from_user.id)
     for item in users:
-        #if item.id == message.from_user.id:
-            item.faculty = faculty_answer
-            if faculty_answer == "ЭМФ":
-                bot.send_chat_action(message.chat.id, 'typing')
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('АХ', callback_data='group-АХ'),
-                    telebot.types.InlineKeyboardButton('ГМ', callback_data='group-ГМ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ГТС', callback_data='group-ГТС'),
-                    telebot.types.InlineKeyboardButton('МНМ', callback_data='group-МНМ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('МО', callback_data='group-МО'),
-                    telebot.types.InlineKeyboardButton('НТС', callback_data='group-НТС')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ПМК', callback_data='group-ПМК'),
-                    telebot.types.InlineKeyboardButton('ТОА', callback_data='group-ТОА')  
-                )   
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ТОП', callback_data='group-ТОП'),
-                    telebot.types.InlineKeyboardButton('ТХО', callback_data='group-ТХО')  
-                ) 
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ПЭ', callback_data='group-ПЭ'),
-                    telebot.types.InlineKeyboardButton('ТЭ', callback_data='group-ТЭ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ЭРБ', callback_data='group-ЭРБ'),
-                    telebot.types.InlineKeyboardButton('ЭРС', callback_data='group-ЭРС')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ЭС', callback_data='group-ЭС'),
-                )   
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
-                    reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )
-            elif faculty_answer == "Геологоразведочный":
-                bot.send_chat_action(message.chat.id, 'typing')
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ГНГ', callback_data='group-ГНГ'),
-                    telebot.types.InlineKeyboardButton('МГП', callback_data='group-МГП')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('РГИ', callback_data='group-РГИ'),
-                    telebot.types.InlineKeyboardButton('РФ', callback_data='group-РФ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('РФС', callback_data='group-РФС'),
-                    telebot.types.InlineKeyboardButton('НТС', callback_data='group-НТС')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('РМ', callback_data='group-РМ'),
-                    telebot.types.InlineKeyboardButton('РГГ', callback_data='group-РГГ')  
-                )  
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
-                    reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )
-            elif faculty_answer == "Горный":
-                bot.send_chat_action(message.chat.id, 'typing')
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('БТС', callback_data='group-БТС'),
-                    telebot.types.InlineKeyboardButton('ВД', callback_data='group-ВД')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ИЗС', callback_data='group-ИЗС'),
-                    telebot.types.InlineKeyboardButton('ТО', callback_data='group-ТО')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ТПП', callback_data='group-ТПП'),
-                    types.InlineKeyboardButton('ТПР', callback_data='group-ТПР')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('БТБ', callback_data='group-БТБ'),
-                    telebot.types.InlineKeyboardButton('ИЗБ', callback_data='group-ИЗБ')  
-                )   
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
-                    reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )
-            elif faculty_answer == "Нефтегазовый":
-                bot.send_chat_action(message.chat.id, 'typing')
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('НГС', callback_data='group-НГС'),
-                    telebot.types.InlineKeyboardButton('РТ', callback_data='group-РТ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ГРП', callback_data='group-ГРП'),
-                    telebot.types.InlineKeyboardButton('ДГ', callback_data='group-НБ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('НБШ', callback_data='group-НБШ'),
-                    telebot.types.InlineKeyboardButton('НГШ', callback_data='group-НГШ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('НД', callback_data='group-НД'),
-                    telebot.types.InlineKeyboardButton('СТ', callback_data='group-СТ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ТНГ', callback_data='group-ТНГ'),
-                    telebot.types.InlineKeyboardButton('ЭХТ', callback_data='group-ЭХТ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('КРС', callback_data='group-КРС'),
-                    telebot.types.InlineKeyboardButton('НБС', callback_data='group-НБС')  
-                )   
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
-                    reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )
-            elif faculty_answer == "Строительный":
-                bot.send_chat_action(message.chat.id, 'typing')
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ГГ', callback_data='group-ГГ'),
-                    telebot.types.InlineKeyboardButton('ГС', callback_data='group-ГС')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('АГС', callback_data='group-АГС'),
-                    telebot.types.InlineKeyboardButton('ИГ', callback_data='group-ИГ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('СПС', callback_data='group-СПС'),
-                    telebot.types.InlineKeyboardButton('ГК', callback_data='group-ГК')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ПГС', callback_data='group-ПГС'),
-                )  
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
-                    reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )
-            elif faculty_answer == "Переработка":
-                bot.send_chat_action(message.chat.id, 'typing')
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ОП', callback_data='group-ОП'),
-                    telebot.types.InlineKeyboardButton('АПГ', callback_data='group-АПГ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('АПМ', callback_data='group-АПМ'),
-                    telebot.types.InlineKeyboardButton('АПН', callback_data='group-АПН')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('МЦ', callback_data='group-МЦ'),
-                    telebot.types.InlineKeyboardButton('ОНГ', callback_data='group-ОНГ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ТХ', callback_data='group-ТХ'),
-                    telebot.types.InlineKeyboardButton('ТХН', callback_data='group-ТХН')
-                )  
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
-                    reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )
-            elif faculty_answer == "Фундаментальные":
-                bot.send_chat_action(message.chat.id, 'typing')
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ИАС', callback_data='group-ИАС'),
-                    telebot.types.InlineKeyboardButton('ИСТ', callback_data='group-ИСТ')  
-                )
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
-                    reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )
-            elif faculty_answer == "Экономический":
-                bot.send_chat_action(message.chat.id, 'typing')
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('ИТУ', callback_data='group-ИТУ'),
-                    telebot.types.InlineKeyboardButton('МП', callback_data='group-МП')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('САМ', callback_data='group-САМ'),
-                    telebot.types.InlineKeyboardButton('ЭГ', callback_data='group-ЭГ')  
-                )
-                keyboard.add(  
-                    telebot.types.InlineKeyboardButton('БА', callback_data='group-БА'),
-                    telebot.types.InlineKeyboardButton('МТ', callback_data='group-МТ')  
-                )
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
-                    reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )         
+        # async def cm_start(message: types.Message):
+        #     print(item.id)
+        #     print(message.from_user.id)
+        #     if message.from_user.id == item.id:
+        #if item.username == message.from_user.username:
+                item.faculty = faculty_answer
+                if faculty_answer == "ЭМФ":
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('АХ', callback_data='group-АХ'),
+                        telebot.types.InlineKeyboardButton('ГМ', callback_data='group-ГМ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ГТС', callback_data='group-ГТС'),
+                        telebot.types.InlineKeyboardButton('МНМ', callback_data='group-МНМ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('МО', callback_data='group-МО'),
+                        telebot.types.InlineKeyboardButton('НТС', callback_data='group-НТС')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ПМК', callback_data='group-ПМК'),
+                        telebot.types.InlineKeyboardButton('ТОА', callback_data='group-ТОА')  
+                    )   
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ТОП', callback_data='group-ТОП'),
+                        telebot.types.InlineKeyboardButton('ТХО', callback_data='group-ТХО')  
+                    ) 
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ПЭ', callback_data='group-ПЭ'),
+                        telebot.types.InlineKeyboardButton('ТЭ', callback_data='group-ТЭ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ЭРБ', callback_data='group-ЭРБ'),
+                        telebot.types.InlineKeyboardButton('ЭРС', callback_data='group-ЭРС')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ЭС', callback_data='group-ЭС'),
+                    )   
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
+                        reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )
+                elif faculty_answer == "Геологоразведочный":
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ГНГ', callback_data='group-ГНГ'),
+                        telebot.types.InlineKeyboardButton('МГП', callback_data='group-МГП')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('РГИ', callback_data='group-РГИ'),
+                        telebot.types.InlineKeyboardButton('РФ', callback_data='group-РФ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('РФС', callback_data='group-РФС'),
+                        telebot.types.InlineKeyboardButton('НТС', callback_data='group-НТС')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('РМ', callback_data='group-РМ'),
+                        telebot.types.InlineKeyboardButton('РГГ', callback_data='group-РГГ')  
+                    )  
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
+                        reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )
+                elif faculty_answer == "Горный":
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('БТС', callback_data='group-БТС'),
+                        telebot.types.InlineKeyboardButton('ВД', callback_data='group-ВД')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ИЗС', callback_data='group-ИЗС'),
+                        telebot.types.InlineKeyboardButton('ТО', callback_data='group-ТО')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ТПП', callback_data='group-ТПП'),
+                        types.InlineKeyboardButton('ТПР', callback_data='group-ТПР')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('БТБ', callback_data='group-БТБ'),
+                        telebot.types.InlineKeyboardButton('ИЗБ', callback_data='group-ИЗБ')  
+                    )   
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
+                        reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )
+                elif faculty_answer == "Нефтегазовый":
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('НГС', callback_data='group-НГС'),
+                        telebot.types.InlineKeyboardButton('РТ', callback_data='group-РТ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ГРП', callback_data='group-ГРП'),
+                        telebot.types.InlineKeyboardButton('ДГ', callback_data='group-НБ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('НБШ', callback_data='group-НБШ'),
+                        telebot.types.InlineKeyboardButton('НГШ', callback_data='group-НГШ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('НД', callback_data='group-НД'),
+                        telebot.types.InlineKeyboardButton('СТ', callback_data='group-СТ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ТНГ', callback_data='group-ТНГ'),
+                        telebot.types.InlineKeyboardButton('ЭХТ', callback_data='group-ЭХТ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('КРС', callback_data='group-КРС'),
+                        telebot.types.InlineKeyboardButton('НБС', callback_data='group-НБС')  
+                    )   
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
+                        reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )
+                elif faculty_answer == "Строительный":
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ГГ', callback_data='group-ГГ'),
+                        telebot.types.InlineKeyboardButton('ГС', callback_data='group-ГС')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('АГС', callback_data='group-АГС'),
+                        telebot.types.InlineKeyboardButton('ИГ', callback_data='group-ИГ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('СПС', callback_data='group-СПС'),
+                        telebot.types.InlineKeyboardButton('ГК', callback_data='group-ГК')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ПГС', callback_data='group-ПГС'),
+                    )  
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
+                        reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )
+                elif faculty_answer == "Переработка":
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ОП', callback_data='group-ОП'),
+                        telebot.types.InlineKeyboardButton('АПГ', callback_data='group-АПГ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('АПМ', callback_data='group-АПМ'),
+                        telebot.types.InlineKeyboardButton('АПН', callback_data='group-АПН')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('МЦ', callback_data='group-МЦ'),
+                        telebot.types.InlineKeyboardButton('ОНГ', callback_data='group-ОНГ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ТХ', callback_data='group-ТХ'),
+                        telebot.types.InlineKeyboardButton('ТХН', callback_data='group-ТХН')
+                    )  
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
+                        reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )
+                elif faculty_answer == "Фундаментальные":
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ИАС', callback_data='group-ИАС'),
+                        telebot.types.InlineKeyboardButton('ИСТ', callback_data='group-ИСТ')  
+                    )
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
+                        reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )
+                elif faculty_answer == "Экономический":
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('ИТУ', callback_data='group-ИТУ'),
+                        telebot.types.InlineKeyboardButton('МП', callback_data='group-МП')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('САМ', callback_data='group-САМ'),
+                        telebot.types.InlineKeyboardButton('ЭГ', callback_data='group-ЭГ')  
+                    )
+                    keyboard.add(  
+                        telebot.types.InlineKeyboardButton('БА', callback_data='group-БА'),
+                        telebot.types.InlineKeyboardButton('МТ', callback_data='group-МТ')  
+                    )
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(faculty_answer) + ' факультет.' + '\n' + 'Выберите вашу группу',
+                        reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )         
 
 
 def get_group_callback(query):
@@ -329,26 +336,28 @@ def get_group_callback(query):
 def send_group_result(message,ex_code):
     group_answer = ex_code
     for item in users:
+        async def cm_start(message: types.Message):
+            if message.from_user.id == item.id:
         #if item.id == message.from_user.id:
-            item.group = group_answer
-            bot.send_chat_action(message.chat.id, 'typing')
-            keyboard = telebot.types.InlineKeyboardMarkup()  
-            keyboard.add(  
-                telebot.types.InlineKeyboardButton('1', callback_data='year-1'),
-                telebot.types.InlineKeyboardButton('2', callback_data='year-2')  
-            )
-            keyboard.add(  
-                    telebot.types.InlineKeyboardButton('3', callback_data='year-3'),
-                    telebot.types.InlineKeyboardButton('4', callback_data='year-4')  
+                item.group = group_answer
+                bot.send_chat_action(message.chat.id, 'typing')
+                keyboard = telebot.types.InlineKeyboardMarkup()  
+                keyboard.add(  
+                    telebot.types.InlineKeyboardButton('1', callback_data='year-1'),
+                    telebot.types.InlineKeyboardButton('2', callback_data='year-2')  
                 )
-            keyboard.add(  
-                    telebot.types.InlineKeyboardButton('5', callback_data='year-5'),
-                )
-            bot.send_message(  
-                message.chat.id,'Вы выбрали '+ str(item.faculty) + ' факультет,' + str(item.group) + ' группа.' + '\n' + 'Выберите год обучения',
-                reply_markup=keyboard,   
-	        parse_mode='HTML'  
-            )  
+                keyboard.add(  
+                        telebot.types.InlineKeyboardButton('3', callback_data='year-3'),
+                        telebot.types.InlineKeyboardButton('4', callback_data='year-4')  
+                    )
+                keyboard.add(  
+                        telebot.types.InlineKeyboardButton('5', callback_data='year-5'),
+                    )
+                bot.send_message(  
+                    message.chat.id,'Вы выбрали '+ str(item.faculty) + ' факультет,' + str(item.group) + ' группа.' + '\n' + 'Выберите год обучения',
+                    reply_markup=keyboard,   
+                parse_mode='HTML'  
+                )  
 
 def get_year_callback(query):
     bot.answer_callback_query(query.id) # убираем состояние загрузки
@@ -357,19 +366,21 @@ def get_year_callback(query):
 def send_year_result(message, ex_code):
     number_of_course_answer = ex_code
     for item in users:
+        async def cm_start(message: types.Message):
+            if message.from_user.id == item.id:
         #if item.id == message.from_user.id:
-            item.year = number_of_course_answer
-            bot.send_chat_action(message.chat.id, 'typing')
-            keyboard = telebot.types.InlineKeyboardMarkup()  
-            keyboard.add(  
-                telebot.types.InlineKeyboardButton('1', callback_data='semester-1'),
-                telebot.types.InlineKeyboardButton('2', callback_data='semester-2')  
-            )
-            bot.send_message(  
-                message.chat.id,'Вы выбрали '+ str(item.faculty) + ' факультет,' + str(item.group) + ' группа, ' + str(item.year) + ' курс' + '\n' + 'Выберите семестр"',
-            reply_markup=keyboard,   
-	        parse_mode='HTML'  
-            ) 
+                item.year = number_of_course_answer
+                bot.send_chat_action(message.chat.id, 'typing')
+                keyboard = telebot.types.InlineKeyboardMarkup()  
+                keyboard.add(  
+                    telebot.types.InlineKeyboardButton('1', callback_data='semester-1'),
+                    telebot.types.InlineKeyboardButton('2', callback_data='semester-2')  
+                )
+                bot.send_message(  
+                    message.chat.id,'Вы выбрали '+ str(item.faculty) + ' факультет,' + str(item.group) + ' группа, ' + str(item.year) + ' курс' + '\n' + 'Выберите семестр"',
+                reply_markup=keyboard,   
+                parse_mode='HTML'  
+                ) 
 
 def get_semester_callback(query): 
     bot.answer_callback_query(query.id)
@@ -379,23 +390,25 @@ def get_semester_callback(query):
 def send_semester_result(message, ex_code):
     semester = ex_code
     for item in users:
+        async def cm_start(message: types.Message):
+            if message.from_user.id == item.id:
         #if item.id == message.from_user.id:
-            item.semester = semester
-            with open('shablonBaza.png','rb') as photo_object:
-                photo = photo_object
-                bot.send_chat_action(message.chat.id, 'typing')
-                bot.send_photo(message.chat.id,photo)
-                keyboard = telebot.types.InlineKeyboardMarkup()  
-                keyboard.add(  
-                telebot.types.InlineKeyboardButton('table', callback_data='document-table'),
-                )
-                bot.send_message(  
-                    message.chat.id,'Вы выбрали ' + str(item.semester) + " семестр\n" + 
-                    "Выберите базу, если интересующуюся база отсутствует, тогда вставьте свою\n" + 
-                    "ОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ !",
-                reply_markup=keyboard,   
-	            parse_mode='HTML'  
-                )
+                item.semester = semester
+                with open('shablonBaza.png','rb') as photo_object:
+                    photo = photo_object
+                    bot.send_chat_action(message.chat.id, 'typing')
+                    bot.send_photo(message.chat.id,photo)
+                    keyboard = telebot.types.InlineKeyboardMarkup()  
+                    keyboard.add(  
+                    telebot.types.InlineKeyboardButton('table', callback_data='document-table'),
+                    )
+                    bot.send_message(  
+                        message.chat.id,'Вы выбрали ' + str(item.semester) + " семестр\n" + 
+                        "Выберите базу, если интересующуюся база отсутствует, тогда вставьте свою\n" + 
+                        "ОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ !",
+                    reply_markup=keyboard,   
+                    parse_mode='HTML'  
+                    )
         
 
 def get_document_callback(query):
@@ -418,21 +431,25 @@ def data_loop(message,item):
         btn4 = types.KeyboardButton("4")
         markup.add(btn1, btn2,btn3,btn4)
         data = json.load(document_obj)
-        #for item in users:
+        for item in users:
+            async def cm_start(message: types.Message):
+                if message.from_user.id == item.id:
             #if item.id == message.from_user.id:
-        item.data = data
-        item.file_Open = True
-        item.right_answer = data[item.index]['Ответ']
-        bot.send_message(message.chat.id,
-        data[item.index]['Вопрос'] + "\n" + data[item.index]['Ответы'],
-        reply_markup=markup,   
-        parse_mode='HTML'  
-        )
+                    item.data = data
+                    item.file_Open = True
+                    item.right_answer = data[item.index]['Ответ']
+                    bot.send_message(message.chat.id,
+                    data[item.index]['Вопрос'] + "\n" + data[item.index]['Ответы'],
+                    reply_markup=markup,   
+                    parse_mode='HTML'  
+                    )
 
 
 @bot.message_handler(content_types=['text'])
 def func(message):
     for item in users:
+        async def cm_start(message: types.Message):
+            if message.from_user.id == item.id:
             #if item.id == message.from_user.id:
                 if item.file_Open:
                     if(message.text == "1"):
