@@ -26,6 +26,8 @@ class User():
         self.username = ""
 
 users = []
+current_users_id = []
+
 
 mining_facults = ["Геологоразведочный","Горный","ЭМФ","Нефтегазовый","Строительный","Переработка","Фундаментальные","Экономический"]
 emf_groups = ["AX","ГМ","ГТС","МНМ","МО","НТС","ПМК","ТОА","ТОП","ТХО","ПЭ","ТЭ","ЭРБ","ЭРС","ЭС"]
@@ -45,13 +47,14 @@ count_answers = ["1","2","3","4"]
 bot = telebot.TeleBot(config.apikey)
 @bot.message_handler(commands=['start'])
 def start_command(message):
-    current_users_id = []
     user = User()
     user.id = message.from_user.id
-    for user in users:
-        current_users_id.append(user.id)
     if user.id not in current_users_id:
         users.append(user)
+        print(users)
+        for user in users:
+            current_users_id.append(user.id)
+            print(current_users_id)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for faculty in mining_facults:
         btn = types.KeyboardButton(faculty)
