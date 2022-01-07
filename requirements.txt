@@ -17,6 +17,5 @@ virtualenv-clone==0.3.0
 pyTelegramBotAPI==4.2.2
 urllib3==1.26.7
 python-docx==0.8.11
-docx.shared
 requests==2.26.0
 pyparsing==3.0.6
