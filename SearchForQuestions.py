@@ -6,7 +6,7 @@ import json
 import io
 import docx
 from docx.shared import RGBColor
-
+import random
 
 def get_json(doc,user_name):
     doc = docx.Document(f"{doc}") #документ базы
@@ -73,3 +73,10 @@ def get_json(doc,user_name):
 
     with io.open(f"table{user_name}.json", "w", encoding="utf-8") as data_file:
         json.dump(data, data_file, indent=4, ensure_ascii=False)
+
+def shuf(user_name):
+    with io.open(f"table{user_name}.json", encoding="utf-8") as f:
+        templates = json.load(f) #чтение json файла в list
+    random.shuffle(templates)
+    with io.open(f"table{user_name}shuf.json", "w", encoding="utf-8") as data_file:
+        json.dump(templates, data_file, indent=4, ensure_ascii=False) #сохранение нового json файла с перемешанными данными
