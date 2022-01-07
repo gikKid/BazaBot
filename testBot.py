@@ -1,16 +1,11 @@
 import telebot
 from telebot import types
 import os
-import docx
 import json
 import io
-import pytz
 import config
 import os.path
 from SearchForQuestions import get_json, shuf
-
-P_TIMEZONE = pytz.timezone('Europe/Moscow') # для определения времени сообщения
-TIMEZONE_COMMON_NAME = 'Moscow'
 
 
 class User():
@@ -45,8 +40,9 @@ array_years = ["1","2","3","4","5"]
 array_semesters = ["1","2"]
 count_answers = ["1","2","3","4"]
 
+TOKEN = os.environ["TOKEN"]
 
-bot = telebot.TeleBot(config.apikey)
+bot = telebot.TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def start_command(message):
     user = User()
@@ -87,25 +83,32 @@ def handle_docs_photo(message):
                         file_info = bot.get_file(message.document.file_id)
                         downloaded_file = bot.download_file(file_info.file_path)
                         
-                        os.mkdir(f"TestDocuments/{item.faculty}")
-                        os.mkdir(f"TestDocuments/{item.faculty}/{item.semester}")
-                        os.mkdir(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}")
-                        os.mkdir(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}")
+                        if os.path.exists(f"TestDocuments/{item.faculty}") == False:
+                            os.mkdir(f"TestDocuments/{item.faculty}")
+                        if os.path.exists(f"TestDocuments/{item.faculty}/{item.semester}") == False:
+                            os.mkdir(f"TestDocuments/{item.faculty}/{item.semester}")
+                        if os.path.exists(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}") == False:
+                            os.mkdir(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}")
+                        if os.path.exists(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}") == False:
+                            os.mkdir(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}")
 
                         src =f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}/{message.document.file_name}"
                         item.document = message.document.file_name
                         with io.open(f"data_shablon.json", encoding="utf-8") as json_data_bot:
                             json_data_bot = json.load(json_data_bot) #чтение json файла в list
-                            json_data_bot[item.faculty][item.semester][item.year][item.group].append(message.document.file_name)
-                        with io.open("data_shablon.json", "w", encoding="utf-8") as data_file:
-                            json.dump(json_data_bot, data_file, ensure_ascii=False,indent=4)
-                        with open(src, 'wb') as new_file:
-                            new_file.write(downloaded_file)
+                            if message.document.file_name in json_data_bot[item.faculty][item.semester][item.year][item.group]:
+                                bot.send_message(message.chat.id,'База с данным названием уже существует, пожалуйста поменяйте название')
+                            else:    
+                                json_data_bot[item.faculty][item.semester][item.year][item.group].append(message.document.file_name)
+                                with io.open("data_shablon.json", "w", encoding="utf-8") as data_file:
+                                    json.dump(json_data_bot, data_file, ensure_ascii=False,indent=4)
+                                with open(src, 'wb') as new_file:
+                                    new_file.write(downloaded_file)
 
-                        with open(src, 'wb') as new_file:
-                            new_file.write(downloaded_file)
-                        
-                        bot.reply_to(message, "Документ получен...")
+                                with open(src, 'wb') as new_file:
+                                    new_file.write(downloaded_file)
+                                
+                                bot.reply_to(message, "Документ получен...")
                     except Exception as e:
                         bot.reply_to(message, e)
 
@@ -176,7 +179,7 @@ def get_semester(message):
 def get_document(message):
     for item in users:
         if message.from_user.id == item.id:
-            with open('shablonBaza.png','rb') as photo_object:
+            with open('shablonBaza.jpeg','rb') as photo_object:
                 photo = photo_object
                 bot.send_chat_action(message.chat.id, 'typing')
                 bot.send_photo(message.chat.id,photo)
@@ -184,7 +187,7 @@ def get_document(message):
                 btn1 = types.KeyboardButton("Посмотреть базы")
                 btn2 = types.KeyboardButton("Открыть добавленную базу")
                 markup.add(btn1,btn2)
-                bot.send_message(message.chat.id, text="Вставьте свою базу перед нажатием на кнопку 'Открыть добавленную базу' \nОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ И РАСШИРЕНИЕ ФАЙЛА БЫЛО .DOCX , ТАБЛИЦА ДОЛЖНА БЫТЬ В АВТОПОДБОРЕ ПО СОДЕРЖИМОМУ !\nВы также можете посмотреть уже добавленные базы по вашим ответам".format(message.from_user), reply_markup=markup)
+                bot.send_message(message.chat.id, text="Вставьте свою базу перед нажатием на кнопку 'Открыть добавленную базу'\n\nОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ И РАСШИРЕНИЕ ФАЙЛА БЫЛО .DOCX , ТАБЛИЦА ДОЛЖНА БЫТЬ В АВТОПОДБОРЕ ПО СОДЕРЖИМОМУ !\n\nБаза должна иметь два столбца, первую строку 'Вопросы' и 'Ответы', ответы должны быть полностью (вместе с цифрой) выделены красным цветом\n\nНа данный момент база работает только с текстовыми файлами без формул и картинок.\n\nПо возможности база не должна содержать картинки, фото и пустых ячеек.\n\nЕсли вы сделали все правильно, но база все равно не работает, напишите /help\n\nВы также можете посмотреть уже добавленные базы".format(message.from_user), reply_markup=markup)
 
 
 def look_bazs(message):
@@ -196,7 +199,6 @@ def look_bazs(message):
                 with io.open("data_shablon.json", encoding="utf-8") as json_data_bot:
                     json_data_bot = json.load(json_data_bot)
                 for baza in json_data_bot[item.faculty][item.semester][item.year][item.group]:
-                    print(baza)
                     btn = types.KeyboardButton(baza)
                     markup.add(btn)
                 bot.send_message(message.chat.id, text="Выберите базу".format(message.from_user), reply_markup=markup)
@@ -212,59 +214,77 @@ def open_current_baza(message):
             bot.send_message(message.chat.id, text="Выберите режим показа вопросов".format(message.from_user), reply_markup=markup)
 
 def get_baza(message,item_passed_id,answer=""):
-    for item in users:
-        if item.id == item_passed_id:
-            get_json(f'TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}/{item.document}',item_passed_id)
-    with open("table" + str(item_passed_id) + ".json") as document_obj:
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        for answer in count_answers:
-            btn = types.KeyboardButton(answer)
-            markup.add(btn)
-        data = json.load(document_obj)
+    try:
         for item in users:
-            if item_passed_id == item.id:
-                item.data = data
-                item.file_Open = True
-                if len(data) < item.index + 1:
-                    item.file_Open = False
-                    item.index = 0
-                else:
-                    item.right_answer = data[item.index]['Ответ']
-                    bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
-                    bot.send_message(message.chat.id,
-                        data[item.index]['Вопросы'] + "\n" + data[item.index]['Ответы'],   
-                        parse_mode='HTML')
+            if item.id == item_passed_id:
+                get_json(f'TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}/{item.document}',item_passed_id)
+        with open("table" + str(item_passed_id) + ".json") as document_obj:
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            for answer in count_answers:
+                btn = types.KeyboardButton(answer)
+                markup.add(btn)
+            data = json.load(document_obj)
+            for item in users:
+                if item_passed_id == item.id:
+                    item.data = data
+                    item.file_Open = True
+                    if len(data) < item.index + 1:
+                        item.file_Open = False
+                        item.index = 0
+                        bot.send_message(message.chat.id,
+                            "База закончилась\nЧтобы добавить новую базу напишите '/start'",   
+                            parse_mode='HTML')
+                        look_bazs(message)
+                    else:
+                        item.right_answer = data[item.index]['Ответ']
+                        bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
+                        bot.send_message(message.chat.id,
+                            data[item.index]['Вопросы'] + "\n" + data[item.index]['Ответы'],   
+                            parse_mode='HTML')
+    except:
+        bot.send_message(message.chat.id,
+                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nВы также можете написать нам, если есть вопросы /help",   
+                            parse_mode='HTML')
 
 
-def get_shuf_baza(message,item_id,name_doc,answer=""):
-    get_json('TestDocuments/' + name_doc,item_id)
-    shuf(item_id)
-    with open("table" + str(item_id) + "shuf" + ".json") as document_obj:
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        for answer in count_answers:
-            btn = types.KeyboardButton(answer)
-            markup.add(btn)
-        data = json.load(document_obj)
+def get_shuf_baza(message,item_passed_id,answer=""):
+    try:
         for item in users:
-            if item_id == item.id:
-                item.data = data
-                item.shufle_file_Open = True
-                if len(data) < item.index + 1:
-                    item.shufle_file_Open = False
-                    item.index = 0
-                else:
-                    item.right_answer = data[item.index]['Ответ']
-                    bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
-                    bot.send_message(message.chat.id,
-                        data[item.index]['Вопросы'] + "\n" + data[item.index]['Ответы'],   
-                        parse_mode='HTML')
+            if item.id == item_passed_id:
+                get_json(f'TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}/{item.document}',item_passed_id)
+                shuf(item_passed_id)
+        with open("table" + str(item_passed_id) + "shuf" + ".json") as document_obj:
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            for answer in count_answers:
+                btn = types.KeyboardButton(answer)
+                markup.add(btn)
+            data = json.load(document_obj)
+            for item in users:
+                if item_passed_id == item.id:
+                    item.data = data
+                    item.shufle_file_Open = True
+                    if len(data) < item.index + 1:
+                        item.shufle_file_Open = False
+                        item.index = 0
+                        bot.send_message(message.chat.id,
+                            "База закончилась\nЧтобы добавить новую базу напишите '/start'",   
+                            parse_mode='HTML')
+                        look_bazs(message)
+                    else:
+                        item.right_answer = data[item.index]['Ответ']
+                        bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
+                        bot.send_message(message.chat.id,
+                            data[item.index]['Вопросы'] + "\n" + data[item.index]['Ответы'],   
+                            parse_mode='HTML')
+    except:
+        bot.send_message(message.chat.id,
+                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nВы также можете написать нам, если есть вопросы /help",   
+                            parse_mode='HTML')
 
 @bot.message_handler(content_types=['text'])
 def func(message):
     for item in users:
             if message.from_user.id == item.id:      
-                # if os.path.isfile(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}"):
-                #     print("test in text")
                 with io.open("data_shablon.json", encoding="utf-8") as json_data_bot:
                     json_data_bot = json.load(json_data_bot)
                 if(message.text in mining_facults):
@@ -308,10 +328,20 @@ def func(message):
                         open_current_baza(message)
                 elif("Вопросы идут по порядку" in message.text):
                     if item.document != "":
-                        get_baza(message=message,item_passed_id=item.id)
+                        try:
+                            get_baza(message=message,item_passed_id=item.id)
+                        except:
+                            bot.send_message(message.chat.id,
+                        "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nВы также можете написать нам, если есть вопросы /help",   
+                        parse_mode='HTML')
                 elif("Вопросы перемешаны" in message.text):
                     if item.document != "":
-                        get_shuf_baza(message=message,item_id=item.id,name_doc=item.document)
+                        try:
+                            get_shuf_baza(message=message,item_passed_id=item.id)
+                        except:
+                            bot.send_message(message.chat.id,
+                        "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nВы также можете написать нам, если есть вопросы /help",   
+                        parse_mode='HTML')
                 elif(message.text in json_data_bot[item.faculty][item.semester][item.year][item.group]):
                     item.document = message.text
                     get_baza(message=message,item_passed_id=item.id)
@@ -351,28 +381,28 @@ def func(message):
                         if message.text in item.right_answer:
                             bot.send_message(message.chat.id, text="Ответ правильный")
                             item.index +=1
-                            get_shuf_baza(message=message,item_id=item.id,name_doc=item.document,answer=message.text)
+                            get_shuf_baza(message=message,item_passed_id=item.id,answer=message.text)
                         else:
                             bot.send_message(message.chat.id, text="Ответ неправильный")
                     elif(message.text == "2"):
                         if message.text in item.right_answer:
                             bot.send_message(message.chat.id, text="Ответ правильный")
                             item.index +=1
-                            get_shuf_baza(message=message,item_id=item.id,name_doc=item.document,answer=message.text)
+                            get_shuf_baza(message=message,item_passed_id=item.id,answer=message.text)
                         else:
                             bot.send_message(message.chat.id, text="Ответ неправильный")
                     elif(message.text == "3"):
                         if message.text in item.right_answer:
                             bot.send_message(message.chat.id, text="Ответ правильный")
                             item.index +=1
-                            get_shuf_baza(message=message,item_id=item.id,name_doc=item.document,answer=message.text)
+                            get_shuf_baza(message=message,item_passed_id=item.id,answer=message.text)
                         else:
                             bot.send_message(message.chat.id, text="Ответ неправильный")
                     elif message.text == "4":
                         if message.text in item.right_answer:
                             bot.send_message(message.chat.id, text="Ответ правильный")
                             item.index +=1
-                            get_shuf_baza(message=message,item_id=item.id,name_doc=item.document,answer=message.text)
+                            get_shuf_baza(message=message,item_passed_id=item.id,answer=message.text)
                         else:
                             bot.send_message(message.chat.id, text="Ответ неправильный")
                     else:
