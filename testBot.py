@@ -24,7 +24,7 @@ class User():
         self.index = 0
         self.data = [{}]
         self.file_Open = False
-        self.username = ""
+        self.allow_doc_key = False
 
 users = []
 current_users_id = []
@@ -39,10 +39,64 @@ stroit_groups = ["ГГ","ГС","АГС","ИГ","СПС","ГК","ПГС"]
 pererabotka_groups = ["ОП","АПГ","АПМ","АПН","МЦ","ОНГ","ТХ","ТХН"]
 fundamental_groups = ["ИАС","ИСТ"]
 economic_groups = ["ИТУ","МП","САМ","ЭГ","БА","МТ"]
-array_years = ["1","2","3","4"]
+array_years = ["1","2","3","4","5"]
 array_semesters = ["1","2"]
-array_bazs = []
 count_answers = ["1","2","3","4"]
+
+dict_groups = dict()
+dict_semesters = dict()
+dict_facults = dict()
+array_bazs_way = list()
+for f in mining_facults:
+    if f == "Геологоразведочный":
+        for s in array_semesters:
+            for y in array_years:
+                dict_groups[y] = geology_groups
+            dict_semesters[s] = dict_groups
+        dict_facults[f] = dict_semesters
+    if f == "Горный":
+        for s in array_semesters:
+            for y in array_years:
+                dict_groups[y] = gorniy_groups
+            dict_semesters[s] = dict_groups
+        dict_facults[f] = dict_semesters
+    if f == "ЭМФ":
+        for s in array_semesters:
+            for y in array_years:
+                dict_groups[y] = emf_groups
+            dict_semesters[s] = dict_groups
+        dict_facults[f] = dict_semesters
+    if f == "Нефтегазовый":
+        for s in array_semesters:
+            for y in array_years:
+                dict_groups[y] = neftegaz_groups
+            dict_semesters[s] = dict_groups
+        dict_facults[f] = dict_semesters
+    if f == "Строительный":
+        for s in array_semesters:
+            for y in array_years:
+                dict_groups[y] = stroit_groups
+            dict_semesters[s] = dict_groups
+        dict_facults[f] = dict_semesters
+    if f == "Переработка":
+        for s in array_semesters:
+            for y in array_years:
+                dict_groups[y] = pererabotka_groups
+            dict_semesters[s] = dict_groups
+        dict_facults[f] = dict_semesters
+    if f == "Фундаментальные":
+        for s in array_semesters:
+            for y in array_years:
+                dict_groups[y] = fundamental_groups
+            dict_semesters[s] = dict_groups
+        dict_facults[f] = dict_semesters
+    if f == "Экономический":
+        for s in array_semesters:
+            for y in array_years:
+                dict_groups[y] = economic_groups
+            dict_semesters[s] = dict_groups
+        dict_facults[f] = dict_semesters
+        array_bazs_way = dict_facults
 
 
 bot = telebot.TeleBot(config.apikey)
@@ -78,18 +132,20 @@ def help_command(message):
         
 @bot.message_handler(content_types=['document'])
 def handle_docs_photo(message):
-    try:
-        file_info = bot.get_file(message.document.file_id)
-        downloaded_file = bot.download_file(file_info.file_path)
-        src = 'TestDocuments/' + message.document.file_name
-        with open(src, 'wb') as new_file:
-            new_file.write(downloaded_file)
+    for item in users:
+        if message.from_user.id == item.id:
+            if item.allow_doc_key:
+                if ".docx" in message.document.file_name:
+                    try:
+                        file_info = bot.get_file(message.document.file_id)
+                        downloaded_file = bot.download_file(file_info.file_path)
+                        src = 'TestDocuments/' + message.document.file_name
+                        with open(src, 'wb') as new_file:
+                            new_file.write(downloaded_file)
 
-        array_bazs.append(message.document.file_name)
-        print(array_bazs)
-        bot.reply_to(message, "Документ получен...")
-    except Exception as e:
-        bot.reply_to(message, e)
+                        bot.reply_to(message, "Документ получен...")
+                    except Exception as e:
+                        bot.reply_to(message, e)
 
 
 def get_groups(message):
@@ -239,6 +295,7 @@ def func(message):
                     get_semester(message)
                 elif("Семестер:" in message.text):
                     item.semester = message.text[-1]
+                    item.allow_doc_key = True
                     get_document(message)
                 elif("Посмотреть базы" in message.text):
                     look_bazs(message)
