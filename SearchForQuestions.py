@@ -1,5 +1,3 @@
-from os import write
-from typing import runtime_checkable
 #from typing_extensions import runtime
 import docx
 import json

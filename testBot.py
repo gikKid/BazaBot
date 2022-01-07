@@ -3,7 +3,6 @@ from telebot import types
 import os
 import json
 import io
-import config
 import os.path
 from SearchForQuestions import get_json, shuf
 
@@ -42,7 +41,7 @@ count_answers = ["1","2","3","4"]
 
 TOKEN = os.environ["TOKEN"]
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot("5095964171:AAH0en9UsoV5YU0uR1mSYoGpUKMQOwshUW8")
 @bot.message_handler(commands=['start'])
 def start_command(message):
     user = User()
