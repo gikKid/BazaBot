@@ -179,7 +179,7 @@ def get_semester(message):
 def get_document(message):
     for item in users:
         if message.from_user.id == item.id:
-            with open('shablonBaza.jpeg','rb') as photo_object:
+            with open('shablonBaza.jpg','rb') as photo_object:
                 photo = photo_object
                 bot.send_chat_action(message.chat.id, 'typing')
                 bot.send_photo(message.chat.id,photo)
