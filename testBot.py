@@ -42,7 +42,7 @@ array_semesters = ["1","2"]
 count_answers = ["1","2","3","4"]
 
 #TOKEN = os.environ["TOKEN"]
-apikey = "5095964171:AAH0en9UsoV5YU0uR1mSYoGpUKMQOwshUW8"
+apikey = ""
 
 bot = telebot.TeleBot(apikey)
 @bot.message_handler(commands=['start'])
