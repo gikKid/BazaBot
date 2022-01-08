@@ -1,8 +1,10 @@
+from logging import error
 import telebot
 from telebot import types
 import os
 import json
 import io
+#import config
 import os.path
 from SearchForQuestions import get_json, shuf
 
@@ -39,9 +41,10 @@ array_years = ["1","2","3","4","5"]
 array_semesters = ["1","2"]
 count_answers = ["1","2","3","4"]
 
-TOKEN = os.environ["TOKEN"]
+#TOKEN = os.environ["TOKEN"]
+apikey = "5095964171:AAH0en9UsoV5YU0uR1mSYoGpUKMQOwshUW8"
 
-bot = telebot.TeleBot("5095964171:AAH0en9UsoV5YU0uR1mSYoGpUKMQOwshUW8") 
+bot = telebot.TeleBot(apikey)
 @bot.message_handler(commands=['start'])
 def start_command(message):
     user = User()
@@ -91,6 +94,15 @@ def handle_docs_photo(message):
                         if os.path.exists(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}") == False:
                             os.mkdir(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}")
 
+                        if os.path.exists(f"TestJson/{item.faculty}") == False:
+                            os.mkdir(f"TestJson/{item.faculty}")
+                        if os.path.exists(f"TestJson/{item.faculty}/{item.semester}") == False:
+                            os.mkdir(f"TestJson/{item.faculty}/{item.semester}")
+                        if os.path.exists(f"TestJson/{item.faculty}/{item.semester}/{item.year}") == False:
+                            os.mkdir(f"TestJson/{item.faculty}/{item.semester}/{item.year}")
+                        if os.path.exists(f"TestJson/{item.faculty}/{item.semester}/{item.year}/{item.group}") == False:
+                            os.mkdir(f"TestJson/{item.faculty}/{item.semester}/{item.year}/{item.group}")
+
                         src =f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}/{message.document.file_name}"
                         item.document = message.document.file_name
                         with io.open(f"data_shablon.json", encoding="utf-8") as json_data_bot:
@@ -103,10 +115,7 @@ def handle_docs_photo(message):
                                     json.dump(json_data_bot, data_file, ensure_ascii=False,indent=4)
                                 with open(src, 'wb') as new_file:
                                     new_file.write(downloaded_file)
-
-                                with open(src, 'wb') as new_file:
-                                    new_file.write(downloaded_file)
-                                
+                                get_json(f'TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}/{item.document}',item=item)
                                 bot.reply_to(message, "Документ получен...")
                     except Exception as e:
                         bot.reply_to(message, e)
@@ -186,7 +195,7 @@ def get_document(message):
                 btn1 = types.KeyboardButton("Посмотреть базы")
                 btn2 = types.KeyboardButton("Открыть добавленную базу")
                 markup.add(btn1,btn2)
-                bot.send_message(message.chat.id, text="Вставьте свою базу перед нажатием на кнопку 'Открыть добавленную базу'\n\nОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ И РАСШИРЕНИЕ ФАЙЛА БЫЛО .DOCX , ТАБЛИЦА ДОЛЖНА БЫТЬ В АВТОПОДБОРЕ ПО СОДЕРЖИМОМУ !\n\nБаза должна иметь два столбца, первую строку 'Вопросы' и 'Ответы', ответы должны быть полностью (вместе с цифрой) выделены красным цветом\n\nНа данный момент база работает только с текстовыми файлами без формул и картинок.\n\nПо возможности база не должна содержать картинки, фото и пустых ячеек.\n\nЕсли вы сделали все правильно, но база все равно не работает, напишите /help\n\nВы также можете посмотреть уже добавленные базы".format(message.from_user), reply_markup=markup)
+                bot.send_message(message.chat.id, text="Вставьте свою базу перед нажатием на кнопку 'Открыть добавленную базу'\n\nОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ И РАСШИРЕНИЕ ФАЙЛА БЫЛО .DOCX , ТАБЛИЦА ДОЛЖНА БЫТЬ В АВТОПОДБОРЕ ПО СОДЕРЖИМОМУ !\n\nБаза должна иметь два столбца, первую строку 'Вопросы' и 'Ответы', ответы должны быть полностью (вместе с цифрой) выделены красным цветом\n\nНа данный момент база работает только с текстовыми файлами без формул и картинок.\n\nПо возможности база не должна содержать картинки, фото и пустых ячеек.\n\nЕсли вы сделали все правильно, но база все равно не работает, напишите /help\n\nВы также можете посмотреть уже добавленные базы\n\nДождитесь пока бот не напишет 'Документ получен', только после этого нажимайте 'Открыть добавленную базу' !".format(message.from_user), reply_markup=markup)
 
 
 def look_bazs(message):
@@ -194,7 +203,7 @@ def look_bazs(message):
         if message.from_user.id == item.id:
             bot.send_chat_action(message.chat.id, 'typing')
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            if os.path.exists(f"TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}"):
+            if os.path.exists(f"TestJson/{item.faculty}/{item.semester}/{item.year}/{item.group}"):
                 with io.open("data_shablon.json", encoding="utf-8") as json_data_bot:
                     json_data_bot = json.load(json_data_bot)
                 for baza in json_data_bot[item.faculty][item.semester][item.year][item.group]:
@@ -216,33 +225,32 @@ def get_baza(message,item_passed_id,answer=""):
     try:
         for item in users:
             if item.id == item_passed_id:
-                get_json(f'TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}/{item.document}',item_passed_id)
-        with open("table" + str(item_passed_id) + ".json") as document_obj:
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            for answer in count_answers:
-                btn = types.KeyboardButton(answer)
-                markup.add(btn)
-            data = json.load(document_obj)
-            for item in users:
-                if item_passed_id == item.id:
-                    item.data = data
-                    item.file_Open = True
-                    if len(data) < item.index + 1:
-                        item.file_Open = False
-                        item.index = 0
-                        bot.send_message(message.chat.id,
-                            "База закончилась\nЧтобы добавить новую базу напишите '/start'",   
-                            parse_mode='HTML')
-                        look_bazs(message)
-                    else:
-                        item.right_answer = data[item.index]['Ответ']
-                        bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
-                        bot.send_message(message.chat.id,
-                            data[item.index]['Вопросы'] + "\n" + data[item.index]['Ответы'],   
-                            parse_mode='HTML')
+                with open(f"TestJson/{item.faculty}/{item.semester}/{item.year}/{item.group}/table{item.document}.json") as document_obj:
+                    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+                    for answer in count_answers:
+                        btn = types.KeyboardButton(answer)
+                        markup.add(btn)
+                    data = json.load(document_obj)
+                    for item in users:
+                        if item_passed_id == item.id:
+                            item.data = data
+                            item.file_Open = True
+                            if len(data) < item.index + 1:
+                                item.file_Open = False
+                                item.index = 0
+                                bot.send_message(message.chat.id,
+                                    "База закончилась\nЧтобы добавить новую базу напишите '/start'",   
+                                    parse_mode='HTML')
+                                look_bazs(message)
+                            else:
+                                item.right_answer = data[item.index]['Ответ']
+                                bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
+                                bot.send_message(message.chat.id,
+                                    data[item.index]['Вопросы'] + "\n" + data[item.index]['Ответы'],   
+                                    parse_mode='HTML')
     except:
         bot.send_message(message.chat.id,
-                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nВы также можете написать нам, если есть вопросы /help",   
+                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help\n" + str(error),   
                             parse_mode='HTML')
 
 
@@ -250,9 +258,8 @@ def get_shuf_baza(message,item_passed_id,answer=""):
     try:
         for item in users:
             if item.id == item_passed_id:
-                get_json(f'TestDocuments/{item.faculty}/{item.semester}/{item.year}/{item.group}/{item.document}',item_passed_id)
-                shuf(item_passed_id)
-        with open("table" + str(item_passed_id) + "shuf" + ".json") as document_obj:
+                shuf(item)
+        with open(f"TestJson/{item.faculty}/{item.semester}/{item.year}/{item.group}/table{item.document}{item.id}shuf.json") as document_obj:
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             for answer in count_answers:
                 btn = types.KeyboardButton(answer)
@@ -277,7 +284,7 @@ def get_shuf_baza(message,item_passed_id,answer=""):
                             parse_mode='HTML')
     except:
         bot.send_message(message.chat.id,
-                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nВы также можете написать нам, если есть вопросы /help",   
+                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help" + str(error),   
                             parse_mode='HTML')
 
 @bot.message_handler(content_types=['text'])
@@ -331,7 +338,7 @@ def func(message):
                             get_baza(message=message,item_passed_id=item.id)
                         except:
                             bot.send_message(message.chat.id,
-                        "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nВы также можете написать нам, если есть вопросы /help",   
+                        "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help",   
                         parse_mode='HTML')
                 elif("Вопросы перемешаны" in message.text):
                     if item.document != "":
@@ -339,7 +346,7 @@ def func(message):
                             get_shuf_baza(message=message,item_passed_id=item.id)
                         except:
                             bot.send_message(message.chat.id,
-                        "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nВы также можете написать нам, если есть вопросы /help",   
+                        "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help",   
                         parse_mode='HTML')
                 elif(message.text in json_data_bot[item.faculty][item.semester][item.year][item.group]):
                     item.document = message.text
