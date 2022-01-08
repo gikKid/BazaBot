@@ -42,8 +42,8 @@ def get_json(doc,user_name):
                         array.append(cell.text)
                 for para in cell.paragraphs:
                     for run in para.runs:                
-                        check = RGBColor.from_string('000000')
-                        if run.font.color.rgb != check :
+                        check = RGBColor.from_string('FF0000')
+                        if run.font.color.rgb == check :
                             if run.text != " " and run.text != "\n":
                                 text1 = para.text
                                 text_array = []
