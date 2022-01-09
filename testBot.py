@@ -32,7 +32,7 @@ mining_facults = ["Геологоразведочный","Горный","ЭМФ"
 emf_groups = ["AX","ГМ","ГТС","МНМ","МО","НТС","ПМК","ТОА","ТОП","ТХО","ПЭ","ТЭ","ЭРБ","ЭРС","ЭС"]
 geology_groups = ["ГНГ","МГП","РГИ","РФ","РФС","НТС","РМ", "РГГ"]
 gorniy_groups = ["БТС","ВД","ИЗС","ТО","ТПП","ТПР","БТБ","ИЗБ"]
-neftegaz_groups = ["НГС","РТ","ГРП","НБ","НБШ","НГШ","НД","СТ","ТНГ","ЭХТ","КРС","НБС","НБ"]
+neftegaz_groups = ["НГС","РТ","ГРП","НБ","НБШ","НГШ","НД","СТ","ТНГ","ЭХТ","КРС","НБС","НБ","ДГ"]
 stroit_groups = ["ГГ","ГС","АГС","ИГ","СПС","ГК","ПГС"]
 pererabotka_groups = ["ОП","АПГ","АПМ","АПН","МЦ","ОНГ","ТХ","ТХН"]
 fundamental_groups = ["ИАС","ИСТ"]
@@ -42,7 +42,7 @@ array_semesters = ["1","2"]
 count_answers = ["1","2","3","4"]
 
 #TOKEN = os.environ["TOKEN"]
-apikey = ""
+apikey = "5095964171:AAH0en9UsoV5YU0uR1mSYoGpUKMQOwshUW8"
 
 bot = telebot.TeleBot(apikey)
 @bot.message_handler(commands=['start'])
