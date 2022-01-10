@@ -287,6 +287,7 @@ def get_shuf_baza(message,item_passed_id,answer=""):
                             "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help" + str(error),   
                             parse_mode='HTML')
 
+
 @bot.message_handler(content_types=['text'])
 def func(message):
     for item in users:
