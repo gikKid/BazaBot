@@ -45,9 +45,9 @@ def get_json(doc,item):
                         elif j == 2:
                             array.append(cell.text)
                     for para in cell.paragraphs:
-                        for run in para.runs:                
-                            check = RGBColor.from_string('000000')
-                            if run.font.color.rgb != check :
+                        for run in para.runs:
+                            check = RGBColor.from_string('FF0000')
+                            if run.font.color.rgb == check :
                                 if run.text != " " and run.text != "\n":
                                     text1 = para.text
                                     text_array = []
@@ -83,7 +83,7 @@ def shuf(item):
         with io.open(f"TestJson/{item.faculty}/{item.semester}/{item.year}/{item.group}/table{item.document}.json", encoding="utf-8") as f:
             templates = json.load(f) #чтение json файла в list
         random.shuffle(templates)
-        with io.open(f"TestJson/{item.faculty}/{item.semester}/{item.year}/{item.group}/table{item.document}{item.id}shuf.json", "w", encoding="utf-8") as data_file:
+        with io.open(f"TestJson/{item.faculty}/{item.semester}/{item.year}/{item.group}/table{item.document}shuf.json", "w", encoding="utf-8") as data_file:
             json.dump(templates, data_file, indent=4, ensure_ascii=False) #сохранение нового json файла с перемешанными данными
     except:
         print(error)
