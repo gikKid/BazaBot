@@ -27,6 +27,12 @@ groups = {
     "Фундаментальные": ["ИАС","ИСТ"],
     "Экономический": ["ИТУ","МП","САМ","ЭГ","БА","МТ"]
 }
+
+period = {
+    "Курс": ["1","2","3","4","5"],
+    "Семестр": ["1","2"]
+}
+
 array_years = ["1","2","3","4","5"]
 array_semesters = ["1","2"]
 count_answers = ["1","2","3","4"]
@@ -47,6 +53,108 @@ class User():
         self.shufle_file_Open = False
         self.allow_doc_key = False
 
+
+def send_period(message, key):
+    for user in users:
+        if message.from_user.id == user.id:
+                bot.send_chat_action(message.chat.id, 'typing')
+                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+                for i in period[key]:
+                    btn = types.KeyboardButton(f"{key}:" + i)
+                    markup.add(btn)
+                bot.send_message(message.chat.id, text=f"Выберите {key}", reply_markup=markup)
+
+
+
+def send_groups(message):
+    for user in users:
+        if user.id == message.from_user.id:
+            bot.send_chat_action(message.chat.id, 'typing')
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            for group in groups[user.faculty]:
+                    btn = types.KeyboardButton(group)
+                    markup.add(btn)
+            bot.send_message(message.chat.id, text="Факультет выбран, выберите свою группу", reply_markup=markup)
+
+
+def get_document(message):
+    for user in users:
+        if message.from_user.id == user.id:
+            with open('shablonBaza.jpg','rb') as photo_object:
+                photo = photo_object
+                bot.send_chat_action(message.chat.id, 'typing')
+                bot.send_photo(message.chat.id,photo)
+                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+                btn1 = types.KeyboardButton("Посмотреть базы")
+                btn2 = types.KeyboardButton("Открыть добавленную базу")
+                markup.add(btn1,btn2)
+                bot.send_message(message.chat.id, text="Вставьте свою базу перед нажатием на кнопку 'Открыть добавленную базу'\n\nОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ И РАСШИРЕНИЕ ФАЙЛА БЫЛО .DOCX , ТАБЛИЦА ДОЛЖНА БЫТЬ В АВТОПОДБОРЕ ПО СОДЕРЖИМОМУ! БАЗА ДОЛЖНА ИМЕТЬ ДВА СТОЛБЦА, ПЕРВУЮ СТРОКУ 'ВОПРОСЫ' И 'ОТВЕТЫ' !!!!!\n\n Ответы должны быть полностью (вместе с цифрой) выделены красным цветом\n\nНа данный момент база работает только с текстовыми файлами без формул и картинок.\n\nПо возможности база не должна содержать картинки, фото и пустых ячеек.\n\nЕсли вы сделали все правильно, но база все равно не работает, напишите /help\n\nВы также можете посмотреть уже добавленные базы\n\nДождитесь пока бот не напишет 'Документ получен', только после этого нажимайте 'Открыть добавленную базу' !", reply_markup=markup)
+
+
+def look_bazs(message):
+    for user in users:
+        if message.from_user.id == user.id:
+            bot.send_chat_action(message.chat.id, 'typing')
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            if os.path.exists(f"TestJson/{user.faculty}/{user.semester}/{user.year}/{user.group}"):
+                with io.open("data_shablon.json", encoding="utf-8") as json_data_bot:
+                    json_data_bot = json.load(json_data_bot)
+                for baza in json_data_bot[user.faculty][user.semester][user.year][user.group]:
+                    btn = types.KeyboardButton(baza)
+                    markup.add(btn)
+                bot.send_message(message.chat.id, text="Выберите базу", reply_markup=markup)
+            else:
+                bot.send_message(message.chat.id, text="Баз нет, добавьте базу согласно шаблону", reply_markup=markup)
+                
+                
+def open_current_baza(message):
+    for user in users:
+        if message.from_user.id == user.id:
+            bot.send_chat_action(message.chat.id, 'typing')
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            btn1 = types.KeyboardButton("Вопросы идут по порядку")
+            btn2 = types.KeyboardButton("Вопросы перемешаны")
+            markup.add(btn1,btn2)
+            bot.send_message(message.chat.id, text="Выберите режим показа вопросов", reply_markup=markup)
+
+            
+def get_baza(message, item_passed_id, is_shuf=False):
+    try:
+        for user in users:
+            if user.id == item_passed_id:
+                if is_shuf:
+                    shuf(user)
+                with open(f"TestJson/{user.faculty}/{user.semester}/{user.year}/{user.group}/table{user.document}.json") as document_obj:
+                    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+                    for answer in count_answers:
+                        btn = types.KeyboardButton(answer)
+                        markup.add(btn)
+                    skip_btn = types.KeyboardButton("Пропустить вопрос")
+                    markup.add(skip_btn)
+                    data = json.load(document_obj)
+                    user.data = data
+                    for user in users:
+                        if item_passed_id == user.id:
+                            user.data = data
+                            user.file_Open = True
+                            if len(data) < user.index + 1:
+                                user.file_Open = False
+                                user.index = 0
+                                bot.send_message(message.chat.id,
+                                    "База закончилась\nЧтобы добавить новую базу напишите '/start'",
+                                    parse_mode='HTML')
+                                look_bazs(message)
+                            else:
+                                user.right_answer = data[user.index]['Ответ']
+                                bot.send_message(message.chat.id, text="Выберите правильный ответ", reply_markup=markup)
+                                bot.send_message(message.chat.id,
+                                    data[user.index]['Вопросы'] + "\n" + data[user.index]['Ответы'],
+                                    parse_mode='HTML')
+    except:
+        bot.send_message(message.chat.id,
+                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help\n" + str(error),
+                            parse_mode='HTML')
+        
 
 @bot.message_handler(commands=['start'])
 def start_command(message):
@@ -124,147 +232,7 @@ def handle_docs_photo(message):
                         bot.reply_to(message, e)
 
 
-def send_groups(message):
-    for user in users:
-        if user.id == message.from_user.id:
-            bot.send_chat_action(message.chat.id, 'typing')
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            for group in groups[user.faculty]:
-                    btn = types.KeyboardButton(group)
-                    markup.add(btn)
-            bot.send_message(message.chat.id, text="Факультет выбран, выберите свою группу".format(message.from_user), reply_markup=markup)
 
-
-def get_years(message):
-    for user in users:
-        if message.from_user.id == user.id:
-                bot.send_chat_action(message.chat.id, 'typing')
-                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                for year in array_years:
-                    btn = types.KeyboardButton("Год:" + str(year))
-                    markup.add(btn)
-                bot.send_message(message.chat.id, text="Группы выбрана,выберите год обучения".format(message.from_user), reply_markup=markup)
-
-
-def get_semester(message):
-         for user in users:
-            if message.from_user.id == user.id:
-                bot.send_chat_action(message.chat.id, 'typing')
-                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                for semester in array_semesters:
-                    btn = types.KeyboardButton("Семестр:" + str(semester))
-                    markup.add(btn)
-                bot.send_message(message.chat.id, text="Выберите семестр".format(message.from_user), reply_markup=markup)
-
-
-def get_document(message):
-    for user in users:
-        if message.from_user.id == user.id:
-            with open('shablonBaza.jpg','rb') as photo_object:
-                photo = photo_object
-                bot.send_chat_action(message.chat.id, 'typing')
-                bot.send_photo(message.chat.id,photo)
-                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                btn1 = types.KeyboardButton("Посмотреть базы")
-                btn2 = types.KeyboardButton("Открыть добавленную базу")
-                markup.add(btn1,btn2)
-                bot.send_message(message.chat.id, text="Вставьте свою базу перед нажатием на кнопку 'Открыть добавленную базу'\n\nОБЯЗАТЕЛЬНО ПРОВЕРЬТЕ ЧТОБЫ ВАША БАЗА СООТВЕТСТВОВАЛА ШАБЛОНУ ФОТОГРАФИИ СВЕРХУ И РАСШИРЕНИЕ ФАЙЛА БЫЛО .DOCX , ТАБЛИЦА ДОЛЖНА БЫТЬ В АВТОПОДБОРЕ ПО СОДЕРЖИМОМУ! БАЗА ДОЛЖНА ИМЕТЬ ДВА СТОЛБЦА, ПЕРВУЮ СТРОКУ 'ВОПРОСЫ' И 'ОТВЕТЫ' !!!!!\n\n Ответы должны быть полностью (вместе с цифрой) выделены красным цветом\n\nНа данный момент база работает только с текстовыми файлами без формул и картинок.\n\nПо возможности база не должна содержать картинки, фото и пустых ячеек.\n\nЕсли вы сделали все правильно, но база все равно не работает, напишите /help\n\nВы также можете посмотреть уже добавленные базы\n\nДождитесь пока бот не напишет 'Документ получен', только после этого нажимайте 'Открыть добавленную базу' !".format(message.from_user), reply_markup=markup)
-
-
-def look_bazs(message):
-    for user in users:
-        if message.from_user.id == user.id:
-            bot.send_chat_action(message.chat.id, 'typing')
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            if os.path.exists(f"TestJson/{user.faculty}/{user.semester}/{user.year}/{user.group}"):
-                with io.open("data_shablon.json", encoding="utf-8") as json_data_bot:
-                    json_data_bot = json.load(json_data_bot)
-                for baza in json_data_bot[user.faculty][user.semester][user.year][user.group]:
-                    btn = types.KeyboardButton(baza)
-                    markup.add(btn)
-                bot.send_message(message.chat.id, text="Выберите базу".format(message.from_user), reply_markup=markup)
-            else:
-                bot.send_message(message.chat.id, text="Баз нет, добавьте базу согласно шаблону".format(message.from_user), reply_markup=markup)
-                
-                
-def open_current_baza(message):
-    for user in users:
-        if message.from_user.id == user.id:
-            bot.send_chat_action(message.chat.id, 'typing')
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            btn1 = types.KeyboardButton("Вопросы идут по порядку")
-            btn2 = types.KeyboardButton("Вопросы перемешаны")
-            markup.add(btn1,btn2)
-            bot.send_message(message.chat.id, text="Выберите режим показа вопросов".format(message.from_user), reply_markup=markup)
-
-            
-def get_baza(message,item_passed_id):
-    try:
-        for user in users:
-            if user.id == item_passed_id:
-                with open(f"TestJson/{user.faculty}/{user.semester}/{user.year}/{user.group}/table{user.document}.json") as document_obj:
-                    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                    for answer in count_answers:
-                        btn = types.KeyboardButton(answer)
-                        markup.add(btn)
-                    skip_btn = types.KeyboardButton("Пропустить вопрос")
-                    markup.add(skip_btn)
-                    data = json.load(document_obj)
-                    for user in users:
-                        if item_passed_id == user.id:
-                            user.data = data
-                            user.file_Open = True
-                            if len(data) < user.index + 1:
-                                user.file_Open = False
-                                user.index = 0
-                                bot.send_message(message.chat.id,
-                                    "База закончилась\nЧтобы добавить новую базу напишите '/start'",
-                                    parse_mode='HTML')
-                                look_bazs(message)
-                            else:
-                                user.right_answer = data[user.index]['Ответ']
-                                bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
-                                bot.send_message(message.chat.id,
-                                    data[user.index]['Вопросы'] + "\n" + data[user.index]['Ответы'],
-                                    parse_mode='HTML')
-    except:
-        bot.send_message(message.chat.id,
-                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help\n" + str(error),
-                            parse_mode='HTML')
-
-
-def get_shuf_baza(message,item_passed_id):
-    try:
-        for user in users:
-            if user.id == item_passed_id:
-                shuf(user)
-                with open(f"TestJson/{user.faculty}/{user.semester}/{user.year}/{user.group}/table{user.document}shuf.json") as document_obj:
-                    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                    for answer in count_answers:
-                        btn = types.KeyboardButton(answer)
-                        markup.add(btn)
-                    skip_btn = types.KeyboardButton("Пропустить вопрос")
-                    markup.add(skip_btn)
-                    data = json.load(document_obj)
-                    user.data = data
-                    user.shufle_file_Open = True
-                    if len(data) < user.index + 1:
-                        user.shufle_file_Open = False
-                        user.index = 0
-                        bot.send_message(message.chat.id,
-                                            "База закончилась\nЧтобы добавить новую базу напишите '/start'",
-                                            parse_mode='HTML')
-                        look_bazs(message)
-                    else:
-                        user.right_answer = data[user.index]['Ответ']
-                        bot.send_message(message.chat.id, text="Выберите правильный ответ".format(message.from_user), reply_markup=markup)
-                        bot.send_message(message.chat.id,
-                            data[user.index]['Вопросы'] + "\n" + data[user.index]['Ответы'],
-                            parse_mode='HTML')
-    except:
-        bot.send_message(message.chat.id,
-                            "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help" + str(error),
-                            parse_mode='HTML')
 
         
 @bot.message_handler(content_types=['text'])
@@ -278,10 +246,10 @@ def func(message):
                     send_groups(message)            
                 elif message.text in groups[user.faculty]:
                     user.group = message.text
-                    get_years(message)
-                elif("Год:" in message.text):
+                    send_period(message, key="Курс")
+                elif "Курс:" in message.text:
                     user.year = message.text[-1]
-                    get_semester(message)
+                    send_period(message, key="Семестр")
                 elif("Семестр:" in message.text):
                     user.semester = message.text[-1]
                     user.allow_doc_key = True
@@ -295,9 +263,9 @@ def func(message):
                     if user.document != "":
                         try:
                             if("Вопросы идут по порядку" in message.text):
-                                get_baza(message=message,item_passed_id=user.id)
+                                get_baza(message=message, item_passed_id=user.id)
                             else:
-                                get_shuf_baza(message=message,item_passed_id=user.id)
+                                get_baza(message=message, item_passed_id=user.id, is_shuf=True)
                         except:
                             bot.send_message(message.chat.id,
                         "Исправьте базу - убедитесь, что она соответствует всем требованиям и шаблону фотографии\nНапишите /start чтобы попробовать снова\nВы также можете написать нам, если есть вопросы /help",
@@ -311,17 +279,17 @@ def func(message):
                             bot.send_message(message.chat.id, text="Ответ правильный")
                             user.index +=1
                             if user.shufle_file_Open:
-                                get_shuf_baza(message=message,item_passed_id=user.id)
+                                get_baza(message=message, item_passed_id=user.id, is_shuf=True)
                             else:
-                                get_baza(message=message,item_passed_id=user.id)
+                                get_baza(message=message, item_passed_id=user.id)
                         else:
                             bot.send_message(message.chat.id, text="Ответ неправильный")
                     elif message.text == "Пропустить вопрос":
                         user.index += 1
                         if user.shufle_file_Open:
-                            get_shuf_baza(message=message,item_passed_id=user.id)
+                            get_baza(message=message, item_passed_id=user.id, is_shuf=True)
                         else:
-                            get_baza(message=message,item_passed_id=user.id)
+                            get_baza(message=message, item_passed_id=user.id)
                     else:
                         bot.send_message(message.chat.id, text="Ответ должен быть от 1 до 4")
 
